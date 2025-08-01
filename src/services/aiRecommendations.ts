@@ -6,21 +6,83 @@ interface RecommendationResult {
   reasoning: string;
 }
 
-// This is a placeholder for OpenAI integration
-// In production, you would replace this with actual OpenAI API calls
+const OPENAI_API_KEY = "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";
+
 export const getAIRecommendations = async (query: string): Promise<RecommendationResult> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Simple keyword-based matching for demo purposes
-  // In production, this would be handled by OpenAI GPT
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert product recommendation AI. Analyze the user's request and recommend the most suitable products from this catalog: ${JSON.stringify(sampleProducts, null, 2)}
+
+Instructions:
+1. Select 3-6 products that best match the user's criteria
+2. Consider price range, category, features, and use case
+3. Prioritize products with higher ratings when quality is important
+4. Provide clear, helpful reasoning for your recommendations
+5. Respond in JSON format: {"productIds": ["1", "2", "3"], "reasoning": "Your detailed explanation"}`
+          },
+          {
+            role: 'user',
+            content: query
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 800,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const aiResponse = data.choices[0]?.message?.content;
+    
+    try {
+      const parsedResponse = JSON.parse(aiResponse);
+      const recommendedProducts = sampleProducts.filter(product => 
+        parsedResponse.productIds.includes(product.id)
+      );
+      
+      return {
+        products: recommendedProducts,
+        reasoning: parsedResponse.reasoning
+      };
+    } catch (parseError) {
+      // Fallback parsing if JSON is malformed
+      const productIds = aiResponse.match(/"(\d+)"/g)?.map((match: string) => match.replace(/"/g, '')) || [];
+      const recommendedProducts = sampleProducts.filter(product => 
+        productIds.includes(product.id)
+      );
+      
+      return {
+        products: recommendedProducts.length > 0 ? recommendedProducts : sampleProducts.slice(0, 3),
+        reasoning: aiResponse || "AI recommendations based on your preferences."
+      };
+    }
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    // Fallback to simple recommendations
+    return getSimpleRecommendations(query);
+  }
+};
+
+// Fallback recommendation system
+const getSimpleRecommendations = (query: string): RecommendationResult => {
   const lowercaseQuery = query.toLowerCase();
-  
   let filteredProducts: Product[] = [];
-  let reasoning = "";
   
   // Extract price preference
-  const priceMatch = query.match(/under \$?(\d+)/i) || query.match(/below \$?(\d+)/i) || query.match(/less than \$?(\d+)/i);
+  const priceMatch = query.match(/under \$?(\d+)/i) || query.match(/below \$?(\d+)/i);
   const maxPrice = priceMatch ? parseInt(priceMatch[1]) : null;
   
   // Extract category preference
@@ -29,53 +91,26 @@ export const getAIRecommendations = async (query: string): Promise<Recommendatio
     category = "smartphone";
   } else if (lowercaseQuery.includes("laptop") || lowercaseQuery.includes("computer")) {
     category = "laptop";
-  } else if (lowercaseQuery.includes("tablet") || lowercaseQuery.includes("ipad")) {
+  } else if (lowercaseQuery.includes("tablet")) {
     category = "tablet";
   } else if (lowercaseQuery.includes("headphone") || lowercaseQuery.includes("earbuds")) {
     category = "headphones";
   }
   
-  // Filter products based on criteria
+  // Filter products
   filteredProducts = sampleProducts.filter(product => {
     const matchesCategory = !category || product.category === category;
     const matchesPrice = !maxPrice || product.price <= maxPrice;
-    
-    // Additional keyword matching
-    const productText = `${product.name} ${product.description} ${product.features.join(" ")}`.toLowerCase();
-    const keywords = ["camera", "gaming", "battery", "fast", "premium", "budget", "professional"];
-    const hasKeywordMatch = keywords.some(keyword => 
-      lowercaseQuery.includes(keyword) && productText.includes(keyword)
-    );
-    
-    return matchesCategory && matchesPrice && (hasKeywordMatch || !keywords.some(k => lowercaseQuery.includes(k)));
+    return matchesCategory && matchesPrice;
   });
   
-  // Sort by rating and price
-  filteredProducts.sort((a, b) => {
-    if (maxPrice) {
-      // If budget is specified, prioritize lower prices
-      return a.price - b.price;
-    }
-    return b.rating - a.rating;
-  });
-  
-  // Limit to top 6 recommendations
-  filteredProducts = filteredProducts.slice(0, 6);
-  
-  // Generate reasoning
-  if (maxPrice && category) {
-    reasoning = `Based on your request for a ${category} under $${maxPrice}, I've found ${filteredProducts.length} excellent options. I've prioritized products within your budget and sorted them by value and customer ratings.`;
-  } else if (maxPrice) {
-    reasoning = `I found ${filteredProducts.length} products under $${maxPrice} that match your criteria, sorted by value and customer satisfaction.`;
-  } else if (category) {
-    reasoning = `Here are the top ${filteredProducts.length} ${category} products, ranked by customer ratings and overall quality.`;
-  } else {
-    reasoning = `Based on your search, I've selected ${filteredProducts.length} highly-rated products that best match your requirements.`;
-  }
+  // Sort and limit
+  filteredProducts.sort((a, b) => b.rating - a.rating);
+  filteredProducts = filteredProducts.slice(0, 4);
   
   return {
     products: filteredProducts,
-    reasoning
+    reasoning: `Found ${filteredProducts.length} products matching your criteria, sorted by customer ratings.`
   };
 };
 

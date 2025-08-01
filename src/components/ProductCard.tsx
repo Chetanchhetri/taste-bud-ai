@@ -7,13 +7,17 @@ import { Star, ShoppingCart } from "lucide-react";
 interface ProductCardProps {
   product: Product;
   isRecommended?: boolean;
+  onClick?: () => void;
 }
 
-export const ProductCard = ({ product, isRecommended }: ProductCardProps) => {
+export const ProductCard = ({ product, isRecommended, onClick }: ProductCardProps) => {
   return (
-    <Card className={`group transition-all duration-300 hover:shadow-card hover:-translate-y-1 ${
-      isRecommended ? "ring-2 ring-primary shadow-ai animate-glow" : ""
-    }`}>
+    <Card 
+      className={`group transition-all duration-300 hover:shadow-card hover:-translate-y-1 cursor-pointer ${
+        isRecommended ? "ring-2 ring-primary shadow-ai animate-glow" : ""
+      }`}
+      onClick={onClick}
+    >
       <CardHeader className="p-0">
         <div className="relative overflow-hidden rounded-t-lg">
           <img

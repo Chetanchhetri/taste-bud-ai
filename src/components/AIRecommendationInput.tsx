@@ -37,11 +37,11 @@ export const AIRecommendationInput = ({ onRecommendation, isLoading }: AIRecomme
     <Card className="bg-gradient-hero border-primary/20">
       <CardHeader className="text-center">
         <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-          <Sparkles className="h-6 w-6 text-primary" />
-          AI Product Recommendations
+          <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+          🤖 GPT-4 Product Recommendations
         </CardTitle>
         <p className="text-muted-foreground">
-          Tell me what you're looking for and I'll find the perfect products for you
+          Powered by OpenAI GPT-4 • Tell me what you're looking for and I'll find the perfect products for you
         </p>
       </CardHeader>
       

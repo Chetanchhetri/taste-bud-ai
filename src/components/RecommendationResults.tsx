@@ -8,9 +8,10 @@ interface RecommendationResultsProps {
   products: Product[];
   reasoning: string;
   query: string;
+  onProductClick?: (product: Product) => void;
 }
 
-export const RecommendationResults = ({ products, reasoning, query }: RecommendationResultsProps) => {
+export const RecommendationResults = ({ products, reasoning, query, onProductClick }: RecommendationResultsProps) => {
   if (products.length === 0) {
     return (
       <Card className="border-destructive/20 bg-destructive/5">
@@ -52,6 +53,7 @@ export const RecommendationResults = ({ products, reasoning, query }: Recommenda
         products={products} 
         recommendedIds={products.map(p => p.id)}
         title="🤖 AI Recommended Products"
+        onProductClick={onProductClick}
       />
     </div>
   );

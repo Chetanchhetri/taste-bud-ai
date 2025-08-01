@@ -5,9 +5,10 @@ interface ProductGridProps {
   products: Product[];
   recommendedIds?: string[];
   title?: string;
+  onProductClick?: (product: Product) => void;
 }
 
-export const ProductGrid = ({ products, recommendedIds = [], title }: ProductGridProps) => {
+export const ProductGrid = ({ products, recommendedIds = [], title, onProductClick }: ProductGridProps) => {
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
@@ -23,10 +24,11 @@ export const ProductGrid = ({ products, recommendedIds = [], title }: ProductGri
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((product) => (
-          <ProductCard
-            key={product.id}
+          <ProductCard 
+            key={product.id} 
             product={product}
             isRecommended={recommendedIds.includes(product.id)}
+            onClick={() => onProductClick?.(product)}
           />
         ))}
       </div>
