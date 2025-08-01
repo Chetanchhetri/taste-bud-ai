@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sparkles, ShoppingBag, Filter, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
 const Index = () => {
   const [recommendations, setRecommendations] = useState<{
     products: Product[];
@@ -23,8 +22,9 @@ const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isRecommended, setIsRecommended] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleRecommendation = async (query: string) => {
     setIsLoading(true);
     try {
@@ -37,56 +37,43 @@ const Index = () => {
       setShowAllProducts(false);
       toast({
         title: "🤖 AI Recommendations Ready!",
-        description: `Found ${result.products.length} products perfectly matching your preferences.`,
+        description: `Found ${result.products.length} products perfectly matching your preferences.`
       });
     } catch (error) {
       console.error("Failed to get recommendations:", error);
       toast({
         title: "Error",
         description: "Failed to get recommendations. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleReset = () => {
     setRecommendations(null);
     setShowAllProducts(true);
   };
-
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
     setIsRecommended(recommendations?.products.some(p => p.id === product.id) || false);
   };
-
   const handleBackToProducts = () => {
     setSelectedProduct(null);
     setIsRecommended(false);
   };
-
   const categories = Array.from(new Set(sampleProducts.map(p => p.category)));
-
   if (selectedProduct) {
-    return (
-      <div className="min-h-screen bg-background">
+    return <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
-          <ProductDetail 
-            product={selectedProduct}
-            onBack={handleBackToProducts}
-            isRecommended={isRecommended}
-          />
+          <ProductDetail product={selectedProduct} onBack={handleBackToProducts} isRecommended={isRecommended} />
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-ai rounded-lg">
@@ -98,11 +85,7 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {categories.map((category) => (
-                <Badge key={category} variant="outline" className="capitalize">
-                  {category}
-                </Badge>
-              ))}
+              {categories.map(category => {})}
             </div>
           </div>
         </div>
@@ -111,46 +94,29 @@ const Index = () => {
       <main className="container mx-auto px-4 py-8 space-y-8">
         {/* AI Recommendation Input */}
         <section>
-          <AIRecommendationInput 
-            onRecommendation={handleRecommendation} 
-            isLoading={isLoading}
-          />
+          <AIRecommendationInput onRecommendation={handleRecommendation} isLoading={isLoading} />
         </section>
 
         {/* Results Section */}
-        {recommendations && (
-          <section>
+        {recommendations && <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-3xl font-bold flex items-center gap-2">
                 <Sparkles className="h-8 w-8 text-primary" />
                 AI Recommendations
               </h2>
-              <Button 
-                variant="aiOutline" 
-                onClick={handleReset}
-                className="gap-2"
-              >
+              <Button variant="aiOutline" onClick={handleReset} className="gap-2">
                 <RotateCcw className="h-4 w-4" />
                 Show All Products
               </Button>
             </div>
-            <RecommendationResults 
-              products={recommendations.products}
-              reasoning={recommendations.reasoning}
-              query={recommendations.query}
-              onProductClick={handleProductClick}
-            />
-          </section>
-        )}
+            <RecommendationResults products={recommendations.products} reasoning={recommendations.reasoning} query={recommendations.query} onProductClick={handleProductClick} />
+          </section>}
 
         {/* Separator */}
-        {recommendations && showAllProducts && (
-          <Separator className="my-12" />
-        )}
+        {recommendations && showAllProducts && <Separator className="my-12" />}
 
         {/* All Products Section */}
-        {showAllProducts && (
-          <section>
+        {showAllProducts && <section>
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -171,13 +137,8 @@ const Index = () => {
               </CardContent>
             </Card>
             
-            <ProductGrid 
-              products={sampleProducts}
-              title="🛍️ Product Catalog"
-              onProductClick={handleProductClick}
-            />
-          </section>
-        )}
+            <ProductGrid products={sampleProducts} title="🛍️ Product Catalog" onProductClick={handleProductClick} />
+          </section>}
       </main>
 
       {/* Footer */}
@@ -194,8 +155,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
